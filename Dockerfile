@@ -1,6 +1,6 @@
 FROM scratch
 
-COPY bin/puma_exporter /puma_exporter
+COPY dist/puma-exporter_linux_amd64/puma-exporter /puma_exporter
 
 EXPOSE 9882
 

@@ -3,7 +3,7 @@ port 3000
 workers 3
 preload_app!
 
-activate_control_app 'tcp://127.0.0.1:9292', { no_token: true }
+activate_control_app 'tcp://0.0.0.0:9292', { no_token: true }
 
 # Load the metrics plugin
 plugin 'metrics'

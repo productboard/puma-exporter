@@ -25,7 +25,9 @@ build: clean deps ## Build the project
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(EXPORTER_BINARY) -ldflags="$(LDFLAGS)" $(PKG_NAME)
 
-docker: build ## Create docker image
+docker: release ## Create docker image
 	docker buildx build -t productboard/puma-exporter-test-app -f test/Dockerfile .
 	docker buildx build --platform linux/amd64 -t productboard/puma-exporter .
 
+release:
+	goreleaser release --snapshot --rm-dist

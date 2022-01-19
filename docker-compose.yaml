@@ -19,6 +19,8 @@ services:
       - 9882
     ports:
       - 9882:9882
+    environment:
+      - CONTROL_URL=http://app:9292/
     image: productboard/puma-exporter:latest
-    links:
+    depends_on:
       - app
