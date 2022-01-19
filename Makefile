@@ -4,7 +4,6 @@ SHELL:=/bin/bash
 PKG_NAME:=github.com/productboard/puma-exporter
 BUILD_DIR:=bin
 EXPORTER_BINARY:=$(BUILD_DIR)/puma_exporter
-IMAGE := productboard/puma-exporter
 VERSION=1.0.0
 LDFLAGS=-s -w -X main.Version=$(VERSION) -X main.GITCOMMIT=`git rev-parse --short HEAD`
 CGO_ENABLED=0
@@ -27,5 +26,6 @@ build: clean deps ## Build the project
 	go build -o $(EXPORTER_BINARY) -ldflags="$(LDFLAGS)" $(PKG_NAME)
 
 docker: build ## Create docker image
-	docker build -t $(IMAGE):$(VERSION) .
+	docker buildx build -t productboard/puma-exporter-test-app -f test/Dockerfile .
+	docker buildx build --platform linux/amd64 -t productboard/puma-exporter .
 
