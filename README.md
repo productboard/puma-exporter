@@ -8,6 +8,7 @@ Prometheus exporter for [Puma](https://github.com/puma/puma).
 
 - go 1.17+
 - docker - [buildx for multiarch docker images](https://docs.docker.com/buildx/working-with-buildx/#build-multi-platform-images)
+- [goreleaser](https://github.com/goreleaser/goreleaser)
 
 ## Environment variables
 
