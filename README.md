@@ -8,6 +8,7 @@ Prometheus exporter for [Puma](https://github.com/puma/puma).
 
 - go 1.17+
 - docker - [buildx for multiarch docker images](https://docs.docker.com/buildx/working-with-buildx/#build-multi-platform-images)
+- [goreleaser](https://github.com/goreleaser/goreleaser)
 
 ## Environment variables
 
@@ -30,6 +31,43 @@ make docker
 ## Github Actions
 
 - just checking that code is able to compile
+
+## Local development
+
+### Install ruby dependencies
+
+```
+bundle install
+```
+
+###  Run puma locally - will used `config/puma.rb`
+
+```
+bundle exec puma
+```
+
+### Build and run exporter (another terminal)
+
+```
+go build
+./bin/puma_exporter
+```
+
+### Test it
+
+Prometheus metrics by `puma_exporter`
+
+```
+curl http://127.0.0.1:9882/metrics
+```
+
+Prometheus metrics by `puma-metrics` plugin
+
+```
+curl http://127.0.0.1:9393/metrics
+```
+
+Results should be the same.
 
 ## TODO
 

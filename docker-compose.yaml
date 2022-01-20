@@ -1,0 +1,26 @@
+version: "2"
+
+services:
+  app:
+    expose:
+      - 3000
+      - 9292
+      - 9393
+    ports:
+      - 3000:3000
+      - 9292:9292
+      - 9393:9393
+    image: productboard/puma-exporter-test-app:latest
+
+  puma-exporter:
+    tty: true
+    stdin_open: true
+    expose:
+      - 9882
+    ports:
+      - 9882:9882
+    environment:
+      - CONTROL_URL=http://app:9292/
+    image: productboard/puma-exporter:latest
+    depends_on:
+      - app
