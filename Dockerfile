@@ -1,8 +1,7 @@
 FROM scratch
-LABEL source_repository="https://github.com/sapcc/puma-exporter"
 
-COPY bin/puma_exporter /puma_exporter
+COPY dist/puma-exporter_linux_amd64/puma-exporter /puma_exporter
 
-EXPOSE 9325
+EXPOSE 9882
 
 ENTRYPOINT [ "/puma_exporter" ]
