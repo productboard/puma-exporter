@@ -5,7 +5,7 @@ PKG_NAME:=github.com/productboard/puma-exporter
 BUILD_DIR:=bin
 EXPORTER_BINARY:=$(BUILD_DIR)/puma_exporter
 VERSION=1.0.0
-LDFLAGS=-s -w -X main.Version=$(VERSION) -X main.GITCOMMIT=`git rev-parse --short HEAD`
+LDFLAGS=-s -w -X main.Version=$(VERSION) -X main.CommitHash=`git rev-parse --short HEAD` -X main.BuildDate=`date -u +%Y-%m-%d_%H%M%S`
 CGO_ENABLED=0
 GOARCH=amd64
 GOOS=linux

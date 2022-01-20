@@ -30,35 +30,35 @@ var (
 	pumaBacklog = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_backlog",
 		Help: "Number of established but unaccepted connections in the backlog",
-	}, []string{"index"})
+	}, []string{"index", "env", "version", "service"})
 	pumaRunning = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_running",
 		Help: "Number of running worker threads",
-	}, []string{"index"})
+	}, []string{"index", "env", "version", "service"})
 	pumaPoolCapacity = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_pool_capacity",
 		Help: "Number of allocatable worker threads",
-	}, []string{"index"})
+	}, []string{"index", "env", "version", "service"})
 	pumaMaxThreads = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_max_threads",
 		Help: "Maximum number of worker threads",
-	}, []string{"index"})
+	}, []string{"index", "env", "version", "service"})
 	pumaRequestsCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_requests_count",
 		Help: "Number of processed requests",
-	}, []string{"index"})
-	pumaWorkers = prometheus.NewGauge(prometheus.GaugeOpts{
+	}, []string{"index", "env", "version", "service"})
+	pumaWorkers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_workers",
 		Help: "Number of configured workers",
-	})
-	pumaBootedWorkers = prometheus.NewGauge(prometheus.GaugeOpts{
+	}, []string{"env", "version", "service"})
+	pumaBootedWorkers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_booted_workers",
 		Help: "Number of booted workers",
-	})
-	pumaOldWorkers = prometheus.NewGauge(prometheus.GaugeOpts{
+	}, []string{"env", "version", "service"})
+	pumaOldWorkers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_old_workers",
 		Help: "Number of old workers",
-	})
+	}, []string{"env", "version", "service"})
 	//We use our own registry instead of the default to avoid the standard metrics
 	registry = prometheus.NewRegistry()
 )
@@ -172,16 +172,16 @@ func updateMetrics(url string) {
 		log.Printf("Error decoding response from control server: %s", err)
 	}
 	// without labels
-	pumaWorkers.Set(float64(stats.Workers))
-	pumaBootedWorkers.Set(float64(stats.BootedWorkers))
-	pumaOldWorkers.Set(float64(stats.OldWorkers))
+	pumaWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.Workers))
+	pumaBootedWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.BootedWorkers))
+	pumaOldWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.OldWorkers))
 	for i, status := range stats.WorkerStatus {
 		index := fmt.Sprintf("%d", i)
-		pumaBacklog.With(prometheus.Labels{"index": index}).Set(float64(status.LastStatus.Backlog))
-		pumaRunning.With(prometheus.Labels{"index": index}).Set(float64(status.LastStatus.Running))
-		pumaRequestsCount.With(prometheus.Labels{"index": index}).Set(float64(status.LastStatus.RequestsCount))
-		pumaPoolCapacity.With(prometheus.Labels{"index": index}).Set(float64(status.LastStatus.PoolCapacity))
-		pumaMaxThreads.With(prometheus.Labels{"index": index}).Set(float64(status.LastStatus.MaxThreads))
+		pumaBacklog.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.Backlog))
+		pumaRunning.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.Running))
+		pumaRequestsCount.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.RequestsCount))
+		pumaPoolCapacity.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.PoolCapacity))
+		pumaMaxThreads.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.MaxThreads))
 	}
 }
 
