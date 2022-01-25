@@ -30,35 +30,35 @@ var (
 	pumaBacklog = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_backlog",
 		Help: "Number of established but unaccepted connections in the backlog",
-	}, []string{"index", "env", "version", "service"})
+	}, []string{"index", "version"})
 	pumaRunning = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_running",
 		Help: "Number of running worker threads",
-	}, []string{"index", "env", "version", "service"})
+	}, []string{"index", "version"})
 	pumaPoolCapacity = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_pool_capacity",
 		Help: "Number of allocatable worker threads",
-	}, []string{"index", "env", "version", "service"})
+	}, []string{"index", "version"})
 	pumaMaxThreads = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_max_threads",
 		Help: "Maximum number of worker threads",
-	}, []string{"index", "env", "version", "service"})
+	}, []string{"index", "version"})
 	pumaRequestsCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_requests_count",
 		Help: "Number of processed requests",
-	}, []string{"index", "env", "version", "service"})
+	}, []string{"index", "version"})
 	pumaWorkers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_workers",
 		Help: "Number of configured workers",
-	}, []string{"env", "version", "service"})
+	}, []string{"version"})
 	pumaBootedWorkers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_booted_workers",
 		Help: "Number of booted workers",
-	}, []string{"env", "version", "service"})
+	}, []string{"version"})
 	pumaOldWorkers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "puma_old_workers",
 		Help: "Number of old workers",
-	}, []string{"env", "version", "service"})
+	}, []string{"version"})
 	//We use our own registry instead of the default to avoid the standard metrics
 	registry = prometheus.NewRegistry()
 )
