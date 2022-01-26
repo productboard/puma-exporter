@@ -63,7 +63,16 @@ var (
 	registry = prometheus.NewRegistry()
 )
 
-type pumaStats struct {
+type pumaSingleStats struct {
+	StartedAt     time.Time `json:"started_at"`
+	Backlog       int       `json:"backlog"`
+	Running       int       `json:"running"`
+	PoolCapacity  int       `json:"pool_capacity"`
+	MaxThreads    int       `json:"max_threads"`
+	RequestsCount int       `json:"requests_count"`
+}
+
+type pumaClusterStats struct {
 	StartedAt     time.Time `json:"started_at"`
 	Workers       int       `json:"workers"`
 	Phase         int       `json:"phase"`
@@ -88,13 +97,13 @@ type pumaStats struct {
 
 func init() {
 	// Metrics have to be registered to be exposed:
-	// with workers labels
+	// cluster mode with workers labels
 	registry.MustRegister(pumaBacklog)
 	registry.MustRegister(pumaRunning)
 	registry.MustRegister(pumaRequestsCount)
 	registry.MustRegister(pumaPoolCapacity)
 	registry.MustRegister(pumaMaxThreads)
-	// without labels
+	// cluster mode without labels
 	registry.MustRegister(pumaWorkers)
 	registry.MustRegister(pumaBootedWorkers)
 	registry.MustRegister(pumaOldWorkers)
@@ -122,6 +131,12 @@ func main() {
 			EnvVar: "BIND_ADDRESS",
 		},
 		cli.StringFlag{
+			Name:   "cluster-mode,c",
+			Usage:  "Run in cluster mode (single/cluster) - default single",
+			Value:  "single",
+			EnvVar: "CLUSTER_MODE",
+		},
+		cli.StringFlag{
 			Name:   "control-url,u",
 			Usage:  "url for the puma control socket",
 			EnvVar: "CONTROL_URL",
@@ -141,7 +156,7 @@ func runServer(c *cli.Context) {
 
 	go func() {
 		for {
-			updateMetrics(fmt.Sprintf("%s/stats?token=%s", c.GlobalString("control-url"), c.GlobalString("auth-token")))
+			updateMetrics(fmt.Sprintf("%s/stats?token=%s", c.GlobalString("control-url"), c.GlobalString("auth-token")), c.GlobalString("cluster-mode"))
 			time.Sleep(5 * time.Second)
 		}
 	}()
@@ -154,8 +169,7 @@ func runServer(c *cli.Context) {
 	fatalfOnError(err, "Failed to bind on %s: ", c.GlobalString("bind-address"))
 }
 
-func updateMetrics(url string) {
-
+func updateMetrics(url string, mode string) {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Printf("Failed to fetch metrics: %s", err)
@@ -166,22 +180,33 @@ func updateMetrics(url string) {
 		log.Printf("Got error %s from control url", resp.Status)
 		return
 	}
-
-	var stats pumaStats
-	if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
-		log.Printf("Error decoding response from control server: %s", err)
-	}
-	// without labels
-	pumaWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.Workers))
-	pumaBootedWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.BootedWorkers))
-	pumaOldWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.OldWorkers))
-	for i, status := range stats.WorkerStatus {
-		index := fmt.Sprintf("%d", i)
-		pumaBacklog.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.Backlog))
-		pumaRunning.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.Running))
-		pumaRequestsCount.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.RequestsCount))
-		pumaPoolCapacity.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.PoolCapacity))
-		pumaMaxThreads.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.MaxThreads))
+	if mode == "cluster" {
+		var stats pumaClusterStats
+		if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
+			log.Printf("Error decoding response from control server: %s", err)
+		}
+		// without labels
+		pumaWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.Workers))
+		pumaBootedWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.BootedWorkers))
+		pumaOldWorkers.With(prometheus.Labels{"version": Version}).Set(float64(stats.OldWorkers))
+		for i, status := range stats.WorkerStatus {
+			index := fmt.Sprintf("%d", i)
+			pumaBacklog.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.Backlog))
+			pumaRunning.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.Running))
+			pumaRequestsCount.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.RequestsCount))
+			pumaPoolCapacity.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.PoolCapacity))
+			pumaMaxThreads.With(prometheus.Labels{"index": index, "version": Version}).Set(float64(status.LastStatus.MaxThreads))
+		}
+	} else {
+		var stats pumaSingleStats
+		if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
+			log.Printf("Error decoding response from control server: %s", err)
+		}
+		pumaBacklog.With(prometheus.Labels{"index": "0", "version": Version}).Set(float64(stats.Backlog))
+		pumaRunning.With(prometheus.Labels{"index": "0", "version": Version}).Set(float64(stats.Running))
+		pumaRequestsCount.With(prometheus.Labels{"index": "0", "version": Version}).Set(float64(stats.RequestsCount))
+		pumaPoolCapacity.With(prometheus.Labels{"index": "0", "version": Version}).Set(float64(stats.PoolCapacity))
+		pumaMaxThreads.With(prometheus.Labels{"index": "0", "version": Version}).Set(float64(stats.MaxThreads))
 	}
 }
 
