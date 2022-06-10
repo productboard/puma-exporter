@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
@@ -17,7 +18,24 @@ jobs:
           go-version-file: "go.mod"
 
       - name: Install goreleaser
-        run: |
-          go install github.com/goreleaser/goreleaser@latest
+        run: go install github.com/goreleaser/goreleaser@latest
+
       - name: Build docker file
         run: make docker
+
+      - name: Tag docker image
+        run: docker tag productboard/puma-exporter 843222783279.dkr.ecr.us-east-1.amazonaws.com/productboard/puma-exporter:$(git rev-parse --short HEAD)
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ECR_UPLOADER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_UPLOADER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Push docker image
+        run: docker push 843222783279.dkr.ecr.us-east-1.amazonaws.com/productboard/puma-exporter:$(git rev-parse --short HEAD)
