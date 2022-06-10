@@ -3,7 +3,7 @@ name: Release
 on: 
   push:
     branches:
-      - kutner/build
+      - production
 
 jobs:
   build:
