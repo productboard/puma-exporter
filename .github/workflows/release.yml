@@ -1,4 +1,4 @@
-name: Go
+name: Release
 
 on: 
   push:
@@ -16,5 +16,8 @@ jobs:
         with:
           go-version-file: "go.mod"
 
+      - name: Install goreleaser
+        run: |
+          go install github.com/goreleaser/goreleaser@latest
       - name: Build docker file
         run: make docker
