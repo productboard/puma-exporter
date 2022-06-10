@@ -24,7 +24,9 @@ jobs:
         run: make docker
 
       - name: Tag docker image
-        run: docker tag productboard/puma-exporter 843222783279.dkr.ecr.us-east-1.amazonaws.com/productboard/puma-exporter:$(git rev-parse --short HEAD)
+        run: |
+          docker tag productboard/puma-exporter 843222783279.dkr.ecr.us-east-1.amazonaws.com/productboard/puma-exporter:$(git rev-parse --short HEAD)
+          docker tag productboard/puma-exporter 843222783279.dkr.ecr.us-east-1.amazonaws.com/productboard/puma-exporter:latest
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -38,4 +40,6 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Push docker image
-        run: docker push 843222783279.dkr.ecr.us-east-1.amazonaws.com/productboard/puma-exporter:$(git rev-parse --short HEAD)
+        run: |
+          docker push 843222783279.dkr.ecr.us-east-1.amazonaws.com/productboard/puma-exporter:$(git rev-parse --short HEAD)
+          docker push 843222783279.dkr.ecr.us-east-1.amazonaws.com/productboard/puma-exporter:latest
